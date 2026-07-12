@@ -43,9 +43,11 @@ tmux prefix is `Ctrl+a` (not the tmux default `Ctrl+b`).
 | Begin selection (copy-mode) | `v` | `м` |
 | Copy selection (copy-mode) | `y` | `н` |
 
-Alacritty `Ctrl+Shift+C`/`Ctrl+Shift+V` (copy/paste) additionally bind by raw
-scancode (`46`/`47`), so they keep working regardless of the active keyboard
-layout.
+Alacritty `Ctrl+Shift+C`/`Ctrl+Shift+V` (copy/paste) bind by raw scancode
+(`46`/`47`) instead of named keys, so they work regardless of the active
+keyboard layout with a single binding each. (Named + scancode bindings for
+the same key must not be combined — both would match on a matching keypress
+and fire the action twice, e.g. pasting the clipboard content twice.)
 
 The RU duplicates exist because the keyboard layout is switched at the
 Windows-host level (WSLg forwards the already-translated character), so any
