@@ -3,6 +3,9 @@ import = ["~/dotfiles/alacritty/devices/current.toml"]
 [env]
 TERM = "xterm-256color"
 
+[selection]
+save_to_clipboard = true
+
 [window]
 padding.x = 20
 padding.y = 20
