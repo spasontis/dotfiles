@@ -1,0 +1,9 @@
+[keyboard]
+bindings = [
+  # Disable Alacritty's built-in named Ctrl+Shift+C/V bindings so they don't
+  # fire alongside the scancode-based ones below and double the action.
+  { key = "C", mods = "Control|Shift", action = "None" },
+  { key = "V", mods = "Control|Shift", action = "None" },
+  { key = 46, mods = "Control|Shift", action = "Copy" },
+  { key = 47, mods = "Control|Shift", action = "Paste" }
+]

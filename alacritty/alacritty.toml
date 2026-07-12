@@ -1,3 +1,6 @@
+[general]
+import = ["~/dotfiles/alacritty/devices/current.toml"]
+
 [env]
 TERM = "xterm-256color"
 
@@ -11,9 +14,3 @@ blur = true
 
 [font]
 size = 14.0
-
-[keyboard]
-bindings = [
-  { key = 46, mods = "Control|Shift", action = "Copy" },
-  { key = 47, mods = "Control|Shift", action = "Paste" }
-]
