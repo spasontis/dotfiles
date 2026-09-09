@@ -1,4 +1,4 @@
-import = ["~/dotfiles/alacritty/devices/current.toml"]
+import = ["~/dotfiles/alacritty/os/current.toml"]
 
 [env]
 TERM = "xterm-256color"

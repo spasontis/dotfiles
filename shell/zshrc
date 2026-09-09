@@ -1,0 +1,29 @@
+# Общая часть, одинаковая на всех машинах. Всё платформенное — в
+# shell/os/<платформа>.zsh, подключается в конце файла.
+
+export PATH="$HOME/.local/bin:$PATH"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+[ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
+
+# nvm
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+
+# Профиль ОС. Порядок тот же, что в tmux: WSL проверяется до Linux, потому
+# что WSL — тоже Linux и иначе заберёт его ветку.
+case "$(uname -s)" in
+  Darwin)
+    source ~/dotfiles/shell/os/macos.zsh
+    ;;
+  Linux)
+    if grep -qi microsoft /proc/version 2>/dev/null; then
+      source ~/dotfiles/shell/os/wsl.zsh
+    else
+      source ~/dotfiles/shell/os/linux.zsh
+    fi
+    ;;
+esac
