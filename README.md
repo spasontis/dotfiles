@@ -97,6 +97,8 @@ tmux prefix is `Ctrl+a` (not the tmux default `Ctrl+b`).
 | Copy selection (copy-mode) | `y` | `н` |
 | Push tmux buffer to system clipboard | prefix `Ctrl+c` | — |
 | Paste system clipboard into pane | prefix `Ctrl+v` | — |
+| Broadcast `/clear` to every Claude Code pane in the window | prefix `B` | — |
+| Reset stuck bracketed-paste mode | prefix `P` | — |
 
 The RU duplicates live in `tmux/os/wsl.conf` because the keyboard layout
 there is switched at the Windows-host level (WSLg forwards the
@@ -113,6 +115,35 @@ and the action fires twice. `os/linux.toml` keeps the named bindings and adds
 RU duplicates (`С`/`М`) instead. `os/macos.toml` needs neither: the system
 gesture there is `Cmd+C`/`Cmd+V`, and the named `Ctrl+Shift` pair is kept only
 for muscle memory shared with the other machines.
+
+## Bracketed paste
+
+A terminal wraps pasted text in `ESC[200~` … `ESC[201~` so the receiving
+program can tell a paste from typing. A program opts in by emitting
+`ESC[?2004h`, and the markers only make sense to one that did. When they
+reach a program that did not, the `ESC` is swallowed as an Escape keypress
+and the rest lands in the input as literal text — a stray `[200~` at the
+start of whatever you pasted.
+
+Two things here guard against that:
+
+`default-terminal` is `tmux-256color`, not `screen-256color`. The latter's
+terminfo describes neither bracketed paste (`BE`/`BD`) nor italics (`sitm`),
+so a program that checks terminfo before opting in never does, and every
+paste the outer terminal wrapped arrives as garbage. `tmux-256color` is
+picked only if `infocmp` finds it locally, because `TERM` travels over ssh
+and a host with older ncurses would report a terminal it cannot describe.
+Note that the setting applies to *new* panes — existing ones keep the `TERM`
+they were started with.
+
+The `Ctrl+v` paste bindings pass `-p`, which wraps the text only when the
+program in the pane has asked for bracketed paste. Without it a multi-line
+paste arrives as bare newlines, and a TUI that reads those as submissions —
+Claude Code does — sends the text as several separate messages.
+
+That leaves the case no config can prevent: a TUI that enables the mode and
+is killed before it can disable it leaves the terminal wrapping pastes for
+whatever runs next. prefix `P` clears that without restarting the pane.
 
 ## Clipboard
 
