@@ -208,10 +208,11 @@ Four pieces make that work, and only the first is per-OS.
    the base rather than a profile.
 3. Mouse drag, double-click and triple-click are re-bound in the root table
    without tmux's default `#{mouse_any_flag}` branch. By default tmux hands
-   the whole drag to any application that asked for the mouse (Claude Code,
-   vim, htop), so a plain selection inside such a pane never reaches tmux and
-   copies nothing. Clicks and the wheel are deliberately left to the
-   application — taking those breaks its UI and scrolling.
+   the whole drag to any application that asked for the mouse (vim, htop,
+   mc), so a plain selection inside such a pane never reaches tmux and copies
+   nothing. Clicks and the wheel are deliberately left to the application —
+   taking those breaks its UI and scrolling. Claude Code is the one exception
+   and keeps its drags; see *Claude Code in fullscreen mode* below.
 4. `Ctrl+V` in zsh pastes the system clipboard. zsh binds `Ctrl+V` to
    `quoted-insert` by default, which looks like nothing happening; literal
    input moves to `Ctrl+Q`.
@@ -220,3 +221,42 @@ One case stays manual on purpose: tmux only forwards an application's OSC 52
 outward from a **visible** pane of an attached session. Something copied by an
 app in a background window lands in tmux's own buffer and nowhere else —
 prefix `Ctrl+c` pushes it to the system clipboard.
+
+## Claude Code in fullscreen mode
+
+Checked 18.09.2026 against Claude Code 2.1.276.
+
+`"tui": "fullscreen"` in `~/.claude/settings.json` (`/tui default` switches
+back, `/config` toggles it) makes Claude Code draw on the **alternate
+screen**. Two consequences, both of which look like "copying out of Claude
+Code is broken":
+
+- tmux keeps no history for an alternate-screen pane: `#{history_size}` is
+  1–6 lines against a 50000 limit. Copy mode, `capture-pane` and history
+  search see the current screen and nothing else; whatever scrolled away does
+  not exist as far as tmux is concerned. The wheel goes to the application in
+  any case — `#{alternate_on}` is part of tmux's default `WheelUpPane`.
+- Claude Code in this mode brings its **own** scrollback, its own mouse
+  selection, and copy-on-select (setting `copyOnSelect`, on by default). It
+  writes the result through three paths at once: the native tool (`pbcopy`
+  here), `tmux load-buffer -w`, and OSC 52. The first one does not depend on
+  tmux forwarding anything, so this also works from a background pane — the
+  manual `prefix Ctrl+c` case above does not apply to it.
+
+So the rule in item 3 is inverted for these panes: taking their drags swaps a
+working selection that has scrollback for a copy mode that has none, and
+swallows the double-click that expands a collapsed tool result. The base
+config therefore hands drag and double/triple click back to panes that are on
+the alternate screen *and* whose `#{pane_current_command}` is `claude` or
+looks like a version number (`2_1_276` — the native installer runs the binary
+straight out of `~/.local/share/claude/versions/<version>`, so the process is
+named after it). The `#{alternate_on}` half of that test matters: under
+`/tui default` Claude Code draws on the normal screen, everything lands in
+tmux's history, and selection should stay with tmux like everywhere else.
+
+Not verified by hand: the gesture itself. The change follows from the
+configuration and from the strings in the binary, not from a mouse.
+
+Two keyboard routes bypass all of the above: `/copy [N]` copies the Nth
+assistant message from the end (`copyFullResponse` decides full text versus
+code blocks only), and `/export` copies or writes out the whole conversation.
