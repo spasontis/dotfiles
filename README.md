@@ -19,7 +19,14 @@ tmux/.tmux.conf          alacritty/alacritty.toml     shell/zshrc
 tmux/os/macos.conf       alacritty/os/macos.toml      shell/os/macos.zsh
 tmux/os/linux.conf       alacritty/os/linux.toml      shell/os/linux.zsh
 tmux/os/wsl.conf         alacritty/os/wsl.toml        shell/os/wsl.zsh
+
+tmux/ru-layout.sh        alacritty/ru-layout.toml     — keyboard layout,
+                                                        shared by every OS
 ```
+
+Keyboard layout is deliberately **not** part of that split: ЙЦУКЕН is not a
+kind of machine, so the RU twins of every binding live in the shared
+`ru-layout.*` files — see [the rule](#keyboard-layout-the-rule).
 
 The split is by **operating system**, and only things that genuinely differ
 per OS live in the profiles: which command reaches the system clipboard
@@ -86,7 +93,7 @@ Copy-Item alacritty\alacritty.toml "$env:APPDATA\alacritty\alacritty.toml"
 
 tmux prefix is `Ctrl+a` (not the tmux default `Ctrl+b`).
 
-| Action | Key | RU (ЙЦУКЕН) duplicate (`os/wsl.conf` only) |
+| Action | Key | RU (ЙЦУКЕН) |
 |--------|-----|------------------------|
 | Split horizontal | prefix `\` | — (same char on both layouts) |
 | Split vertical | prefix `-` | — (same char on both layouts) |
@@ -100,21 +107,62 @@ tmux prefix is `Ctrl+a` (not the tmux default `Ctrl+b`).
 | Broadcast `/clear` to every Claude Code pane in the window | prefix `B` | — |
 | Reset stuck bracketed-paste mode | prefix `P` | — |
 
-The RU duplicates live in `tmux/os/wsl.conf` because the keyboard layout
-there is switched at the Windows-host level (WSLg forwards the
-already-translated character), so any tmux binding keyed on a specific letter
-breaks under a non-Latin layout unless a duplicate binding is added for the
-character that layout produces on the same physical key. Other systems don't
-need them.
+The RU column is not maintained by hand — see the rule below.
 
-Alacritty `Ctrl+Shift+C`/`Ctrl+Shift+V` (copy/paste) are bound per OS.
-`os/wsl.toml` binds by raw scancode (`46`/`47`) so a single binding works
-under any layout, and explicitly disables Alacritty's own named `"C"`/`"V"`
-defaults first (`action = "None"`) — otherwise both match under an EN layout
-and the action fires twice. `os/linux.toml` keeps the named bindings and adds
-RU duplicates (`С`/`М`) instead. `os/macos.toml` needs neither: the system
-gesture there is `Cmd+C`/`Cmd+V`, and the named `Ctrl+Shift` pair is kept only
-for muscle memory shared with the other machines.
+## Keyboard layout (the rule)
+
+**Every binding must work under both layouts, EN and ЙЦУКЕН. A change that
+adds or moves a binding is not finished until its RU twin works too.** Nobody
+should have to switch the layout to press a key, and no binding may fail
+silently because the layout was Russian at that moment.
+
+Why it breaks: neither tmux nor Alacritty sees a *key*, both see the
+**character the layout produced**. Under ЙЦУКЕН the physical `V` sends `м`,
+so a binding written for `V` matches nothing at all and the keypress does
+nothing — no error, no beep. Alacritty additionally builds control codes out
+of the Latin letter, so `Ctrl+A`, `Ctrl+C`, `Ctrl+V` produce no control byte
+under a Cyrillic layout either, and neither tmux's prefix nor `Ctrl+C` reaches
+the program.
+
+The layout is **not a property of the machine**, so none of this belongs in
+`os/*` — it is the same on macOS, Linux and WSL. Three places cover it:
+
+| Layer | File | What it does |
+|-------|------|--------------|
+| tmux | `tmux/ru-layout.sh` | Mirrors **every** letter binding of the `prefix` and `copy-mode-vi` tables into ЙЦУКЕН. Run from the end of `.tmux.conf` on every config load, including prefix `r`. |
+| Alacritty, `Ctrl`+letter | `alacritty/ru-layout.toml` | Sends the control code the Latin twin would send (`Ctrl+ф` → `\u0001`, i.e. `Ctrl+A`). Imported by the base config before the OS profile. |
+| Alacritty, copy/paste gesture | `alacritty/os/*.toml` | The gesture itself differs per OS, so the RU twin lives next to it: `Cmd+С`/`Cmd+М` and `Ctrl+Shift+С`/`Ctrl+Shift+М` on macOS, `Ctrl+Shift+С`/`М` on Linux. |
+
+The tmux side is a script and not a hand-written list on purpose: a list goes
+stale silently, and you only find out when your hand misses under the Russian
+layout. The script reads the bindings back out of tmux, so new bindings — and
+tmux's own defaults (prefix `c`, `d`, `n`, `p`, `x`, `z`, `[`, `]`, …) — are
+covered the moment they exist. **When you add a tmux binding you do nothing.**
+
+When you add an *Alacritty* binding you add the RU twin by hand, in the same
+file, in the same commit. Two traps there:
+
+- `os/wsl.toml` binds copy/paste by raw scancode (`46`/`47`), which is already
+  layout-independent, and disables Alacritty's named `"C"`/`"V"` defaults
+  (`action = "None"`) so they don't fire twice. **Do not add Cyrillic twins
+  there** — the scancode binding and a character binding would both match the
+  same keypress and paste twice.
+- Some keys have no RU twin at all: `$`, `?`, `{`, `}` do not exist on ЙЦУКЕН,
+  and `,` `.` are the same character in both layouts, so a Cyrillic duplicate
+  for them would override an EN binding instead of adding one.
+
+One gap is left open knowingly: `Alt`+letter (zsh's `Alt+f`/`Alt+b`/`Alt+d`
+word motions) has no RU twin. Nothing here binds `Alt`, and on macOS
+Alacritty leaves `Option` to typing special characters (`option_as_alt` is
+unset), so those sequences are not produced there in the first place. If
+`Alt`+letter ever gets bound, it needs the same treatment as `Ctrl`+letter in
+`ru-layout.toml` — the escape prefix plus the Latin letter.
+
+History: the RU duplicates used to sit in `tmux/os/wsl.conf` under the note
+"other machines don't need them", and `os/macos.toml` claimed that
+`Control|Shift` keeps the Latin letter on macOS. Both were wrong and both cost
+a debugging session on 18.09.2026 — the symptom was "can't paste into Claude
+Code", and the paste path itself turned out to be healthy end to end.
 
 ## Bracketed paste
 

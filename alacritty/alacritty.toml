@@ -1,4 +1,10 @@
-import = ["~/dotfiles/alacritty/os/current.toml"]
+# ru-layout.toml — раскладка, одна на все машины; os/current.toml — профиль
+# ОС (симлинк, ставит select-device.sh). Профиль ОС идёт вторым, чтобы
+# платформенное перекрывало общее, если они когда-нибудь пересекутся.
+import = [
+  "~/dotfiles/alacritty/ru-layout.toml",
+  "~/dotfiles/alacritty/os/current.toml",
+]
 
 [env]
 TERM = "xterm-256color"

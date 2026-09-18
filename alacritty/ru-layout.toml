@@ -1,0 +1,46 @@
+# Русская раскладка: Ctrl+буква.
+#
+# Alacritty сопоставляет биндинг по СИМВОЛУ, который дала раскладка, а
+# управляющий код собирает из латинской буквы. Под ЙЦУКЕН физическая V даёт
+# «м», латинской буквы нет — и наружу не уходит ничего: ни Ctrl+A для префикса
+# tmux, ни Ctrl+V для вставки в zsh, ни Ctrl+C, чтобы прервать команду.
+# Отсюда и привычка переключать раскладку перед каждой командой.
+#
+# Таблица ниже возвращает те же коды по физической клавише. Раскладка — не
+# свойство машины, поэтому файл общий и импортируется базой до профиля ОС.
+# Под латинской раскладкой эти биндинги не срабатывают вовсе: таких символов
+# клавиатура не производит, и удвоить действие они не могут.
+#
+# Пар для Ctrl+;  Ctrl+'  Ctrl+,  Ctrl+.  Ctrl+/ здесь нет: у них нет
+# управляющего кода и в латинской раскладке.
+[keyboard]
+bindings = [
+  { key = "ф", mods = "Control", chars = "\u0001" },  # Ctrl+A — префикс tmux
+  { key = "и", mods = "Control", chars = "\u0002" },  # Ctrl+B
+  { key = "с", mods = "Control", chars = "\u0003" },  # Ctrl+C — прервать
+  { key = "в", mods = "Control", chars = "\u0004" },  # Ctrl+D
+  { key = "у", mods = "Control", chars = "\u0005" },  # Ctrl+E
+  { key = "а", mods = "Control", chars = "\u0006" },  # Ctrl+F
+  { key = "п", mods = "Control", chars = "\u0007" },  # Ctrl+G
+  { key = "р", mods = "Control", chars = "\u0008" },  # Ctrl+H — Backspace
+  { key = "ш", mods = "Control", chars = "\u0009" },  # Ctrl+I — Tab
+  { key = "о", mods = "Control", chars = "\u000A" },  # Ctrl+J
+  { key = "л", mods = "Control", chars = "\u000B" },  # Ctrl+K
+  { key = "д", mods = "Control", chars = "\u000C" },  # Ctrl+L — очистить экран
+  { key = "ь", mods = "Control", chars = "\u000D" },  # Ctrl+M — Enter
+  { key = "т", mods = "Control", chars = "\u000E" },  # Ctrl+N
+  { key = "щ", mods = "Control", chars = "\u000F" },  # Ctrl+O
+  { key = "з", mods = "Control", chars = "\u0010" },  # Ctrl+P
+  { key = "й", mods = "Control", chars = "\u0011" },  # Ctrl+Q — literal-ввод в zsh
+  { key = "к", mods = "Control", chars = "\u0012" },  # Ctrl+R — поиск по истории
+  { key = "ы", mods = "Control", chars = "\u0013" },  # Ctrl+S
+  { key = "е", mods = "Control", chars = "\u0014" },  # Ctrl+T
+  { key = "г", mods = "Control", chars = "\u0015" },  # Ctrl+U
+  { key = "м", mods = "Control", chars = "\u0016" },  # Ctrl+V — вставка в zsh и Claude
+  { key = "ц", mods = "Control", chars = "\u0017" },  # Ctrl+W
+  { key = "ч", mods = "Control", chars = "\u0018" },  # Ctrl+X
+  { key = "н", mods = "Control", chars = "\u0019" },  # Ctrl+Y
+  { key = "я", mods = "Control", chars = "\u001A" },  # Ctrl+Z — в фон
+  { key = "х", mods = "Control", chars = "\u001B" },  # Ctrl+[ — Escape
+  { key = "ъ", mods = "Control", chars = "\u001D" },  # Ctrl+]
+]
