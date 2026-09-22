@@ -84,10 +84,21 @@ the dotfiles checkout to a new machine or restoring a snapshot) to re-point
 `devices/` → `os/` rename **must re-run it once**: the old
 `devices/current.toml` symlink is no longer imported.
 
-**Alacritty (Windows):**
-```powershell
-Copy-Item alacritty\alacritty.toml "$env:APPDATA\alacritty\alacritty.toml"
+**Alacritty (Windows, run from WSL):**
+```bash
+~/dotfiles/alacritty/build-windows.sh
 ```
+A plain copy of the base config is **not** enough since the per-OS split: on
+Windows Alacritty is a Windows program and resolves `~` against the Windows
+home (`C:\Users\<name>`), where this checkout does not exist, so both imports
+dangle and neither the RU layout table nor the OS profile ever loads — with no
+error anywhere. Alacritty has no second search path and no runtime
+conditionals to work around that, so the script flattens the three files —
+base without its `import` block, then one `[keyboard]` section with the RU
+twins followed by the OS profile — into a single generated
+`%APPDATA%\alacritty\alacritty.toml`. Re-run it after editing any of the
+three; it takes a profile name as an optional argument (`wsl` by default) and
+backs up a hand-written config once before replacing it.
 
 ## Keybindings
 
