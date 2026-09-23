@@ -279,7 +279,9 @@ Those two routes cover what has already been said; `prefix a` covers the text
 still being typed. It runs `tmux/claude-select-input.sh`, which drops the pane
 into copy mode with the selection already set on the input text and nothing
 else — no frame rules, no `❯` marker, no trailing padding. `y` copies it,
-`Escape` drops it, exactly as after a mouse selection.
+`Escape` drops it, exactly as after a mouse selection. Nothing is written to
+the status line: a selection should look like a selection, not like a prompt,
+and an empty input line is left in silence too.
 
 The input is found by shape, not by process name: the script takes the lowest
 full-width `─` rule on the screen and the nearest rule above it, and the input
@@ -301,7 +303,9 @@ over somebody's screen.
 Limits, from the same run: a wrapped input carries the two-space indent tmux
 sees at the start of each continuation line; an input too long for the frame
 is selected only as far as the frame shows it; a pane whose marker is not `❯`
-plus U+00A0 is reported on the status line and left untouched.
+plus U+00A0 is left untouched, and that one case does say so on the status
+line, because an unknown marker means the frame moved and the key stopped
+working.
 
 The key held `last-window` before: tmux-sensible binds the prefix without
 `Ctrl` to it, and the prefix here is `C-a`. The binding therefore sits below
