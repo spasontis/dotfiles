@@ -116,7 +116,7 @@ tmux prefix is `Ctrl+a` (not the tmux default `Ctrl+b`).
 | Push tmux buffer to system clipboard | prefix `Ctrl+c` | — |
 | Paste system clipboard into pane | prefix `Ctrl+v` | — |
 | Broadcast `/clear` to every Claude Code pane in the window | prefix `B` | — |
-| Select the Claude Code input line | prefix `a` | `ф` |
+| Select the Claude Code input line (copies on select) | prefix `a` | `ф` |
 | Reset stuck bracketed-paste mode | prefix `P` | — |
 
 The RU column is not maintained by hand — see the rule below.
@@ -276,36 +276,45 @@ code blocks only), and `/export` copies or writes out the whole conversation.
 ### Selecting the input line — prefix `a`
 
 Those two routes cover what has already been said; `prefix a` covers the text
-still being typed. It runs `tmux/claude-select-input.sh`, which drops the pane
-into copy mode with the selection already set on the input text and nothing
-else — no frame rules, no `❯` marker, no trailing padding. `y` copies it,
-`Escape` drops it, exactly as after a mouse selection. Nothing is written to
-the status line: a selection should look like a selection, not like a prompt,
-and an empty input line is left in silence too.
+still being typed. It selects the input text and nothing else — no frame
+rules, no `❯` marker, no trailing padding — and the selection is Claude
+Code's own: the same highlight a mouse drag leaves, and `copied N chars to
+clipboard` on the right, since `copyOnSelect` is on by default.
+
+That is why `tmux/claude-select-input.sh` never enters copy mode. Copy mode is
+tmux's own layer over the pane: it paints the selection with `mode-style`
+(yellow by default), it hands nothing to the clipboard until `y`, and in an
+alternate-screen pane it has no history behind it. The script writes SGR mouse
+events into the pane instead — press on the first character of the input, drag
+and release at the right edge of its last line — and Claude Code does the
+selecting. The right edge saves all column arithmetic: trailing spaces are
+trimmed on Claude Code's side.
+
+The pane has to be taking mouse input (`#{mouse_any_flag}`), or the sequences
+would be printed into the input line as text. A pane that is not — `/tui
+default`, another program, a Claude Code that has exited — gets a status-line
+message and nothing else.
 
 The input is found by shape, not by process name: the script takes the lowest
 full-width `─` rule on the screen and the nearest rule above it, and the input
 sits between them, however many lines it wraps to. The marker is `❯` followed
 by a NO-BREAK SPACE (U+00A0) and is not an anchor on its own — the same marker
-precedes every message already sent, higher up in the transcript.
-
-Columns are never counted. `start-of-line` plus two `cursor-right` clears the
-marker at either width, because tmux steps over the padding cell of a wide
-character, and tmux's own `end-of-line` stops at the last non-space character
-of the line, so trailing padding cannot get in.
+precedes every message already sent, higher up in the transcript. The text
+starts in column 3: marker and no-break space take one cell each.
 
 Checked 23.09.2026. The frame layout was read off a live 2.1.280 pane; the
 search for it was run against live 2.1.278 and 2.1.280 screens, full and
-empty; the copy-mode half — where the selection starts and ends — was run on a
-pane reproducing those bytes, because testing it on a live pane means taking
-over somebody's screen.
+empty, and against a zsh pane; the selection itself and the `copied N chars`
+reply were run against a Claude Code pane started for the purpose, because a
+live pane would have handed the test somebody else's clipboard and selection.
 
-Limits, from the same run: a wrapped input carries the two-space indent tmux
-sees at the start of each continuation line; an input too long for the frame
-is selected only as far as the frame shows it; a pane whose marker is not `❯`
-plus U+00A0 is left untouched, and that one case does say so on the status
-line, because an unknown marker means the frame moved and the key stopped
-working.
+Limits, from the same run: input too long for the frame is selected only as
+far as the frame shows it; a pane whose marker is not `❯` plus U+00A0 is left
+untouched and says so on the status line, because an unknown marker means the
+frame moved and the key stopped working; an empty input line is silent, there
+being nothing to select. A wrapped input copies the way a mouse would copy it
+— at the wrap a newline and the two-space indent stand in for the single
+space, 102 characters against the 100 that were typed.
 
 The key held `last-window` before: tmux-sensible binds the prefix without
 `Ctrl` to it, and the prefix here is `C-a`. The binding therefore sits below
