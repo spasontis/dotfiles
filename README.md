@@ -117,6 +117,7 @@ tmux prefix is `Ctrl+a` (not the tmux default `Ctrl+b`).
 | Paste system clipboard into pane | prefix `Ctrl+v` | — |
 | Broadcast `/clear` to every Claude Code pane in the window | prefix `B` | — |
 | Select the Claude Code input line (copies on select) | prefix `a` | `ф` |
+| Switch the layout of the typed input (`ghbdtn` ⇄ `привет`) | prefix `Tab` | — (same key on both layouts) |
 | Reset stuck bracketed-paste mode | prefix `P` | — |
 
 The RU column is not maintained by hand — see the rule below.
@@ -319,3 +320,39 @@ space, 102 characters against the 100 that were typed.
 The key held `last-window` before: tmux-sensible binds the prefix without
 `Ctrl` to it, and the prefix here is `C-a`. The binding therefore sits below
 the tpm `run` line, or the plugin takes the key back on every config load.
+
+### Switching the layout of what is typed — prefix `Tab`
+
+`prefix Tab` retypes the input line in the other keyboard layout: `ghbdtn`
+becomes `привет`, and pressing it again turns it back. `tmux/switch-layout.pl`
+takes the direction from the text itself — whichever script has more letters
+is the one being translated away, a tie goes to Cyrillic — and maps character
+by character, punctuation included. The punctuation is not decoration:
+`привет,` typed on a Latin layout reads `ghbdtn?`, because the ЙЦУКЕН comma
+sits on the QWERTY `?` key. The shifted number row is in the table for the
+same reason (`"`, `№`, `;`, `:`, `?` against `@`, `#`, `$`, `^`, `&`). Text
+with no letters at all is left alone.
+
+The replacement is deliberately blunt: `tmux/claude-switch-layout.sh` sends as
+many `BSpace` as the pane is wide, then types the result back. Counting the
+characters is unnecessary — backspace on an empty input does nothing, and one
+screen line cannot hold more characters than the pane has columns. There is no
+undo and none is needed: the table is symmetric both ways, so the second press
+is the undo.
+
+The key is `Tab` because it is the same key under both layouts — `ru-layout.sh`
+mirrors letters only, and this is the one binding pressed exactly when the
+layout is wrong. `prefix Tab` was bound to nothing.
+
+**Only an input that fits one screen line is touched.** A wrapped one cannot
+be read back off the screen: a wrap at a word boundary eats the space, a wrap
+inside a long word eats nothing, and a newline typed by hand looks like
+either — all three render identically. Returning the wrong text is worse than
+returning none, so a wrapped input is left alone with a message on the status
+line.
+
+Checked 23.09.2026 against 2.1.280: `ghbdtn? rfr ltkf&` became `привет, как
+дела?` and came back unchanged on the second press; digits alone were left
+untouched; an empty input was silent; a two-line input was refused and kept.
+Both scripts share `tmux/claude-input-box.sh`, which is where the frame is
+found and the layout of the input line written down.
