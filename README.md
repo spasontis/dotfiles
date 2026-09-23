@@ -116,6 +116,7 @@ tmux prefix is `Ctrl+a` (not the tmux default `Ctrl+b`).
 | Push tmux buffer to system clipboard | prefix `Ctrl+c` | — |
 | Paste system clipboard into pane | prefix `Ctrl+v` | — |
 | Broadcast `/clear` to every Claude Code pane in the window | prefix `B` | — |
+| Select the Claude Code input line | prefix `a` | `ф` |
 | Reset stuck bracketed-paste mode | prefix `P` | — |
 
 The RU column is not maintained by hand — see the rule below.
@@ -271,3 +272,37 @@ configuration and from the strings in the binary, not from a mouse.
 Two keyboard routes bypass all of the above: `/copy [N]` copies the Nth
 assistant message from the end (`copyFullResponse` decides full text versus
 code blocks only), and `/export` copies or writes out the whole conversation.
+
+### Selecting the input line — prefix `a`
+
+Those two routes cover what has already been said; `prefix a` covers the text
+still being typed. It runs `tmux/claude-select-input.sh`, which drops the pane
+into copy mode with the selection already set on the input text and nothing
+else — no frame rules, no `❯` marker, no trailing padding. `y` copies it,
+`Escape` drops it, exactly as after a mouse selection.
+
+The input is found by shape, not by process name: the script takes the lowest
+full-width `─` rule on the screen and the nearest rule above it, and the input
+sits between them, however many lines it wraps to. The marker is `❯` followed
+by a NO-BREAK SPACE (U+00A0) and is not an anchor on its own — the same marker
+precedes every message already sent, higher up in the transcript.
+
+Columns are never counted. `start-of-line` plus two `cursor-right` clears the
+marker at either width, because tmux steps over the padding cell of a wide
+character, and tmux's own `end-of-line` stops at the last non-space character
+of the line, so trailing padding cannot get in.
+
+Checked 23.09.2026. The frame layout was read off a live 2.1.280 pane; the
+search for it was run against live 2.1.278 and 2.1.280 screens, full and
+empty; the copy-mode half — where the selection starts and ends — was run on a
+pane reproducing those bytes, because testing it on a live pane means taking
+over somebody's screen.
+
+Limits, from the same run: a wrapped input carries the two-space indent tmux
+sees at the start of each continuation line; an input too long for the frame
+is selected only as far as the frame shows it; a pane whose marker is not `❯`
+plus U+00A0 is reported on the status line and left untouched.
+
+The key held `last-window` before: tmux-sensible binds the prefix without
+`Ctrl` to it, and the prefix here is `C-a`. The binding therefore sits below
+the tpm `run` line, or the plugin takes the key back on every config load.
