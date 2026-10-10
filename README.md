@@ -73,8 +73,8 @@ won't run.
 ln -sf ~/dotfiles/shell/zshrc ~/.zshrc
 ```
 
-**Claude Code status line** (user@host, path, git branch, conversation topic,
-model, context used; needs `jq`):
+**Claude Code status line** (two lines: conversation topic, git branch, context used;
+then user@host, path, model; needs `jq`):
 ```bash
 ln -sf ~/dotfiles/claude/statusline-command.sh ~/.claude/statusline-command.sh
 ```

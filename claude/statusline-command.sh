@@ -57,10 +57,14 @@ else
   fi
 fi
 
-# user@host (green) : cwd (blue) [git branch] [topic] [model] [context used%]
+# Две строки: панели tmux узкие, и длинный путь обрезал всё, что за ним.
+# Первая — то, ради чего строка смотрится: тема, ветка, контекст;
+# вторая — user@host:путь и модель.
+line1=""
+[ -n "$topic" ] && line1=$(printf '\033[01;36m%s\033[00m' "$topic")
+[ -n "$branch" ] && line1="$line1$(printf ' \033[02m(%s)\033[00m' "$branch")"
+[ -n "$ctx_pct" ] && line1="$line1$(printf ' \033[02mctx:%s%%\033[00m' "$ctx_pct")"
+[ -n "$line1" ] && printf '%s\n' "${line1# }"
 printf '\033[01;32m%s@%s\033[00m:\033[01;34m%s\033[00m' "$user" "$host" "$dir"
-[ -n "$branch" ] && printf ' \033[02m(%s)\033[00m' "$branch"
-[ -n "$topic" ] && printf ' \033[01;36m%s\033[00m' "$topic"
 [ -n "$model" ] && printf ' \033[02m[%s]\033[00m' "$model"
-[ -n "$ctx_pct" ] && printf ' \033[02mctx:%s%%\033[00m' "$ctx_pct"
 printf '\n'
