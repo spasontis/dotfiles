@@ -73,6 +73,15 @@ won't run.
 ln -sf ~/dotfiles/shell/zshrc ~/.zshrc
 ```
 
+**Claude Code status line** (user@host, path, git branch, conversation topic,
+model, context used; needs `jq`):
+```bash
+ln -sf ~/dotfiles/claude/statusline-command.sh ~/.claude/statusline-command.sh
+```
+`~/.claude/settings.json` points `statusLine.command` at
+`bash ~/.claude/statusline-command.sh`. The topic is the `/rename` name, else
+the latest `ai-title` record of the session transcript.
+
 **Alacritty (macOS/Linux/WSL):**
 ```bash
 ln -sf ~/dotfiles/alacritty/alacritty.toml ~/.config/alacritty/alacritty.toml
