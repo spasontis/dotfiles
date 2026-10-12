@@ -1,0 +1,6 @@
+# Читается каждым zsh, включая команды по SSH без интерактивной оболочки.
+# Moshi запускает так tmux и список окон: без этого файла программы Homebrew
+# на macOS не видны, потому что path_helper срабатывает только в оболочке входа.
+
+[ -d /opt/homebrew/bin ] && export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"

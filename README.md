@@ -9,6 +9,7 @@ Personal configuration files for development environment.
 | tmux | `tmux/.tmux.conf` | `~/.tmux.conf` |
 | Alacritty | `alacritty/alacritty.toml` | `~/.config/alacritty/alacritty.toml` (macOS/Linux/WSL) / `%APPDATA%\alacritty\alacritty.toml` (Windows) |
 | zsh | `shell/zshrc` | `~/.zshrc` |
+| zsh, every shell incl. SSH commands | `shell/zshenv` | `~/.zshenv` |
 
 ## Layout
 
@@ -71,6 +72,7 @@ won't run.
 **zsh:**
 ```bash
 ln -sf ~/dotfiles/shell/zshrc ~/.zshrc
+ln -sf ~/dotfiles/shell/zshenv ~/.zshenv
 ```
 
 **Claude Code status line** (two lines: conversation topic, git branch, context used;
