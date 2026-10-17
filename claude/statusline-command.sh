@@ -74,14 +74,19 @@ if [ -n "$TMUX_PANE" ] && command -v tmux >/dev/null; then
        set -w -t "$TMUX_PANE" @claude_header 1 2>/dev/null && in_header=1
 fi
 
-# Две строки: панели tmux узкие, и длинный путь обрезал всё, что за ним.
-# Первая — тема, ветка, контекст (вне tmux) или только ветка (в tmux);
-# вторая — user@host:путь и модель.
-line1=""
-[ -z "$in_header" ] && [ -n "$topic" ] && line1=$(printf '\033[01;36m%s\033[00m' "$topic")
-[ -n "$branch" ] && line1="$line1$(printf ' \033[02m(%s)\033[00m' "$branch")"
-[ -z "$in_header" ] && [ -n "$ctx_pct" ] && line1="$line1$(printf ' \033[02mctx:%s%%\033[00m' "$ctx_pct")"
-[ -n "$line1" ] && printf '%s\n' "${line1# }"
+# Вне tmux две строки: панели узкие, и длинный путь обрезал всё, что за ним.
+# Первая — тема, ветка, контекст; вторая — user@host:путь и модель.
+# В tmux тема и контекст в заголовке, и строка одна: ветка первой, чтобы
+# её не срезал длинный путь.
+if [ -n "$in_header" ]; then
+  [ -n "$branch" ] && printf '\033[02m(%s)\033[00m ' "$branch"
+else
+  line1=""
+  [ -n "$topic" ] && line1=$(printf '\033[01;36m%s\033[00m' "$topic")
+  [ -n "$branch" ] && line1="$line1$(printf ' \033[02m(%s)\033[00m' "$branch")"
+  [ -n "$ctx_pct" ] && line1="$line1$(printf ' \033[02mctx:%s%%\033[00m' "$ctx_pct")"
+  [ -n "$line1" ] && printf '%s\n' "${line1# }"
+fi
 printf '\033[01;32m%s@%s\033[00m:\033[01;34m%s\033[00m' "$user" "$host" "$dir"
 [ -n "$model" ] && printf ' \033[02m[%s]\033[00m' "$model"
 printf '\n'

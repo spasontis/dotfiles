@@ -78,7 +78,7 @@ ln -sf ~/dotfiles/shell/zshenv ~/.zshenv
 **Claude Code status line** (two lines: conversation topic, git branch, context used;
 then user@host, path, model; needs `jq`). Inside tmux the topic and context
 move to a header above the pane (`pane-border-format` in `tmux/.tmux.conf`),
-and the first line keeps only the branch:
+and the status line shrinks to one: branch, user@host, path, model:
 ```bash
 ln -sf ~/dotfiles/claude/statusline-command.sh ~/.claude/statusline-command.sh
 ```
