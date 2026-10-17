@@ -25,7 +25,7 @@ padding.x = 20
 padding.y = 20
 
 decorations = "ButtonLess"
-opacity = 0.92
+opacity = 0.8
 blur = true
 
 [font]
