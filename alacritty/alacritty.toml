@@ -30,9 +30,3 @@ blur = true
 
 [font]
 size = 14.0
-
-# Прозрачность opacity распространяется и на ячейки с явным цветом фона:
-# строка состояния tmux и заголовок панели Claude Code просвечивают так же,
-# как основной фон.
-[colors]
-transparent_background_colors = true
