@@ -59,17 +59,19 @@ fi
 
 # Внутри tmux тема и контекст уходят в заголовок панели сверху: опции панели
 # @claude_topic и @claude_ctx читает pane-border-format из tmux/.tmux.conf,
-# здесь же для окна включается pane-border-status top. Окна без Claude Code
+# здесь же для окна включается pane-border-status top и ставится опция окна
+# @claude_header, по которой tmux прячет линии рамок. Окна без Claude Code
 # заголовка не получают. "#" удваивается: значение подставляется в формат,
 # и "#[" в теме tmux прочёл бы как стиль.
 in_header=""
 if [ -n "$TMUX_PANE" ] && command -v tmux >/dev/null; then
   t_topic="${topic//#/##}"
   t_ctx=""
-  [ -n "$ctx_pct" ] && t_ctx="ctx:${ctx_pct}%"
+  [ -n "$ctx_pct" ] && t_ctx="${ctx_pct}%"
   tmux set -p -t "$TMUX_PANE" @claude_topic "$t_topic" \; \
        set -p -t "$TMUX_PANE" @claude_ctx "$t_ctx" \; \
-       set -w -t "$TMUX_PANE" pane-border-status top 2>/dev/null && in_header=1
+       set -w -t "$TMUX_PANE" pane-border-status top \; \
+       set -w -t "$TMUX_PANE" @claude_header 1 2>/dev/null && in_header=1
 fi
 
 # Две строки: панели tmux узкие, и длинный путь обрезал всё, что за ним.
