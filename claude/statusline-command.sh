@@ -57,13 +57,28 @@ else
   fi
 fi
 
+# Внутри tmux тема и контекст уходят в заголовок панели сверху: опции панели
+# @claude_topic и @claude_ctx читает pane-border-format из tmux/.tmux.conf,
+# здесь же для окна включается pane-border-status top. Окна без Claude Code
+# заголовка не получают. "#" удваивается: значение подставляется в формат,
+# и "#[" в теме tmux прочёл бы как стиль.
+in_header=""
+if [ -n "$TMUX_PANE" ] && command -v tmux >/dev/null; then
+  t_topic="${topic//#/##}"
+  t_ctx=""
+  [ -n "$ctx_pct" ] && t_ctx="ctx:${ctx_pct}%"
+  tmux set -p -t "$TMUX_PANE" @claude_topic "$t_topic" \; \
+       set -p -t "$TMUX_PANE" @claude_ctx "$t_ctx" \; \
+       set -w -t "$TMUX_PANE" pane-border-status top 2>/dev/null && in_header=1
+fi
+
 # Две строки: панели tmux узкие, и длинный путь обрезал всё, что за ним.
-# Первая — то, ради чего строка смотрится: тема, ветка, контекст;
+# Первая — тема, ветка, контекст (вне tmux) или только ветка (в tmux);
 # вторая — user@host:путь и модель.
 line1=""
-[ -n "$topic" ] && line1=$(printf '\033[01;36m%s\033[00m' "$topic")
+[ -z "$in_header" ] && [ -n "$topic" ] && line1=$(printf '\033[01;36m%s\033[00m' "$topic")
 [ -n "$branch" ] && line1="$line1$(printf ' \033[02m(%s)\033[00m' "$branch")"
-[ -n "$ctx_pct" ] && line1="$line1$(printf ' \033[02mctx:%s%%\033[00m' "$ctx_pct")"
+[ -z "$in_header" ] && [ -n "$ctx_pct" ] && line1="$line1$(printf ' \033[02mctx:%s%%\033[00m' "$ctx_pct")"
 [ -n "$line1" ] && printf '%s\n' "${line1# }"
 printf '\033[01;32m%s@%s\033[00m:\033[01;34m%s\033[00m' "$user" "$host" "$dir"
 [ -n "$model" ] && printf ' \033[02m[%s]\033[00m' "$model"
