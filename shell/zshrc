@@ -8,6 +8,12 @@ export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 [ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
 
+# Оболочка агента Claude Code: шаблон без совпадений уходит команде как есть,
+# как в bash. Без этого `grep -r --include=*.md` без кавычек падал в zsh с
+# «no matches found» до запуска grep — около 5% поисков агента по документации
+# (ревизия ОПТИМИЗАЦИИ 12.11.2026). Снимок оболочки агента переносит опцию.
+[ -n "${CLAUDECODE:-}" ] && setopt no_nomatch
+
 # nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
