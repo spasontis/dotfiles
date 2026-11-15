@@ -75,6 +75,13 @@ ln -sf ~/dotfiles/shell/zshrc ~/.zshrc
 ln -sf ~/dotfiles/shell/zshenv ~/.zshenv
 ```
 
+**Opening links on WSL.** WSL has no `xdg-open` or `wslview`, so a link clicked
+in Claude Code inside tmux highlights and opens nothing. The script hands it to
+`explorer.exe`:
+```bash
+ln -sf ~/dotfiles/shell/os/wsl-open.sh ~/.local/bin/xdg-open
+```
+
 **Claude Code status line** (two lines: conversation topic, git branch, context used;
 then user@host, path, model; needs `jq`). Inside tmux the topic and context
 move to a header above the pane (`pane-border-format` in `tmux/.tmux.conf`),
